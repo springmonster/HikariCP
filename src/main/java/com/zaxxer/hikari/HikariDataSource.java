@@ -106,6 +106,7 @@ public class HikariDataSource extends HikariConfig implements DataSource, Closea
          synchronized (this) {
             result = pool;
             if (result == null) {
+               // 验证配置
                validate();
                LOGGER.info("{} - Starting...", getPoolName());
                try {

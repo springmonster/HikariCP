@@ -165,6 +165,8 @@ public final class HikariPool extends PoolBase implements HikariPoolMXBean, IBag
             }
 
             final var now = currentTime();
+            // 如果有一个连接，验证它是否有效，然后返回它
+            // If we have a connection, validate it before returning it.
             if (poolEntry.isMarkedEvicted() || (elapsedMillis(poolEntry.lastAccessed, now) > aliveBypassWindowMs && isConnectionDead(poolEntry.connection))) {
                closeConnection(poolEntry, poolEntry.isMarkedEvicted() ? EVICTED_CONNECTION_MESSAGE : DEAD_CONNECTION_MESSAGE);
                timeout = hardTimeout - elapsedMillis(startTime);
