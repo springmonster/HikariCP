@@ -15,10 +15,17 @@
  */
 package com.zaxxer.hikari.util;
 
-import com.zaxxer.hikari.util.ConcurrentBag.IConcurrentBagEntry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static com.zaxxer.hikari.util.ClockSource.currentTime;
+import static com.zaxxer.hikari.util.ClockSource.elapsedNanos;
+import static com.zaxxer.hikari.util.ConcurrentBag.IConcurrentBagEntry.STATE_IN_USE;
+import static com.zaxxer.hikari.util.ConcurrentBag.IConcurrentBagEntry.STATE_NOT_IN_USE;
+import static com.zaxxer.hikari.util.ConcurrentBag.IConcurrentBagEntry.STATE_REMOVED;
+import static com.zaxxer.hikari.util.ConcurrentBag.IConcurrentBagEntry.STATE_RESERVED;
+import static java.util.concurrent.TimeUnit.MICROSECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.locks.LockSupport.parkNanos;
 
+import com.zaxxer.hikari.util.ConcurrentBag.IConcurrentBagEntry;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,13 +35,8 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
-import static com.zaxxer.hikari.util.ClockSource.currentTime;
-import static com.zaxxer.hikari.util.ClockSource.elapsedNanos;
-import static com.zaxxer.hikari.util.ConcurrentBag.IConcurrentBagEntry.*;
-import static java.util.concurrent.TimeUnit.MICROSECONDS;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
-import static java.util.concurrent.locks.LockSupport.parkNanos;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is a specialized concurrent bag that achieves superior performance
@@ -56,6 +58,7 @@ import static java.util.concurrent.locks.LockSupport.parkNanos;
  * @author Brett Wooldridge
  */
 public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseable {
+
    private static final Logger LOGGER = LoggerFactory.getLogger(ConcurrentBag.class);
 
    private final CopyOnWriteArrayList<T> sharedList;
@@ -69,6 +72,7 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
    private final SynchronousQueue<T> handoffQueue;
 
    public interface IConcurrentBagEntry {
+
       int STATE_NOT_IN_USE = 0;
       int STATE_IN_USE = 1;
       int STATE_REMOVED = -1;
@@ -82,6 +86,7 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
    }
 
    public interface IBagStateListener {
+
       void addBagItem(int waiting);
    }
 
@@ -100,7 +105,8 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
       if (weakThreadLocals) {
          this.threadList = ThreadLocal.withInitial(() -> new ArrayList<>(16));
       } else {
-         this.threadList = ThreadLocal.withInitial(() -> new FastList<>(IConcurrentBagEntry.class, 16));
+         this.threadList = ThreadLocal.withInitial(
+            () -> new FastList<>(IConcurrentBagEntry.class, 16));
       }
    }
 
@@ -119,7 +125,8 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
       final var list = threadList.get();
       for (int i = list.size() - 1; i >= 0; i--) {
          final var entry = list.remove(i);
-         @SuppressWarnings("unchecked") final T bagEntry = weakThreadLocals ? ((WeakReference<T>) entry).get() : (T) entry;
+         @SuppressWarnings("unchecked") final T bagEntry =
+            weakThreadLocals ? ((WeakReference<T>) entry).get() : (T) entry;
          if (bagEntry != null && bagEntry.compareAndSet(STATE_NOT_IN_USE, STATE_IN_USE)) {
             return bagEntry;
          }
@@ -199,7 +206,8 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
       sharedList.add(bagEntry);
 
       // spin until a thread takes it or none are waiting
-      while (waiters.get() > 0 && bagEntry.getState() == STATE_NOT_IN_USE && !handoffQueue.offer(bagEntry)) {
+      while (waiters.get() > 0 && bagEntry.getState() == STATE_NOT_IN_USE && !handoffQueue.offer(
+         bagEntry)) {
          Thread.yield();
       }
    }
@@ -214,8 +222,11 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
     *                               from the bag that was not borrowed or reserved first
     */
    public boolean remove(final T bagEntry) {
-      if (!bagEntry.compareAndSet(STATE_IN_USE, STATE_REMOVED) && !bagEntry.compareAndSet(STATE_RESERVED, STATE_REMOVED) && !closed) {
-         LOGGER.warn("Attempt to remove an object from the bag that was not borrowed or reserved: {}", bagEntry);
+      if (!bagEntry.compareAndSet(STATE_IN_USE, STATE_REMOVED) && !bagEntry.compareAndSet(
+         STATE_RESERVED, STATE_REMOVED) && !closed) {
+         LOGGER.warn(
+            "Attempt to remove an object from the bag that was not borrowed or reserved: {}",
+            bagEntry);
          return false;
       }
 
@@ -247,7 +258,8 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
     * @return a possibly empty list of objects having the state specified
     */
    public List<T> values(final int state) {
-      final var list = sharedList.stream().filter(e -> e.getState() == state).collect(Collectors.toList());
+      final var list = sharedList.stream().filter(e -> e.getState() == state)
+         .collect(Collectors.toList());
       Collections.reverse(list);
       return list;
    }
@@ -295,7 +307,8 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
             Thread.yield();
          }
       } else {
-         LOGGER.warn("Attempt to relinquish an object to the bag that was not reserved: {}", bagEntry);
+         LOGGER.warn("Attempt to relinquish an object to the bag that was not reserved: {}",
+            bagEntry);
       }
    }
 
@@ -358,7 +371,8 @@ public class ConcurrentBag<T extends IConcurrentBagEntry> implements AutoCloseab
     */
    private boolean useWeakThreadLocals() {
       try {
-         if (System.getProperty("com.zaxxer.hikari.useWeakReferences") != null) {   // undocumented manual override of WeakReference behavior
+         if (System.getProperty("com.zaxxer.hikari.useWeakReferences")
+            != null) {   // undocumented manual override of WeakReference behavior
             return Boolean.getBoolean("com.zaxxer.hikari.useWeakReferences");
          }
 

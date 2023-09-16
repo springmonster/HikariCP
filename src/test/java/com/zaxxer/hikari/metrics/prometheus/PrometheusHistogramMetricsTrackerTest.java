@@ -12,23 +12,22 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package com.zaxxer.hikari.metrics.prometheus;
+
+import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.prometheus.client.CollectorRegistry;
-import org.junit.Before;
-import org.junit.Test;
-
 import java.sql.Connection;
 import java.sql.SQLTransientConnectionException;
-
-import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
+import org.junit.Before;
+import org.junit.Test;
 
 public class PrometheusHistogramMetricsTrackerTest {
 
@@ -47,7 +46,8 @@ public class PrometheusHistogramMetricsTrackerTest {
    @Test
    public void recordConnectionTimeout() throws Exception {
       HikariConfig config = newHikariConfig();
-      config.setMetricsTrackerFactory(new PrometheusHistogramMetricsTrackerFactory(defaultCollectorRegistry));
+      config.setMetricsTrackerFactory(
+         new PrometheusHistogramMetricsTrackerFactory(defaultCollectorRegistry));
       config.setJdbcUrl("jdbc:h2:mem:");
       config.setMaximumPoolSize(2);
       config.setConnectionTimeout(250);
@@ -56,7 +56,7 @@ public class PrometheusHistogramMetricsTrackerTest {
 
       try (HikariDataSource hikariDataSource = new HikariDataSource(config)) {
          try (Connection connection1 = hikariDataSource.getConnection();
-              Connection connection2 = hikariDataSource.getConnection()) {
+            Connection connection2 = hikariDataSource.getConnection()) {
             try (Connection connection3 = hikariDataSource.getConnection()) {
             } catch (SQLTransientConnectionException ignored) {
             }
@@ -87,17 +87,18 @@ public class PrometheusHistogramMetricsTrackerTest {
    }
 
    @Test
-   public void testMultiplePoolNameWithOneCollectorRegistry()
-   {
+   public void testMultiplePoolNameWithOneCollectorRegistry() {
       HikariConfig configFirstPool = newHikariConfig();
-      configFirstPool.setMetricsTrackerFactory(new PrometheusHistogramMetricsTrackerFactory(defaultCollectorRegistry));
+      configFirstPool.setMetricsTrackerFactory(
+         new PrometheusHistogramMetricsTrackerFactory(defaultCollectorRegistry));
       configFirstPool.setPoolName("first");
       configFirstPool.setJdbcUrl("jdbc:h2:mem:");
       configFirstPool.setMaximumPoolSize(2);
       configFirstPool.setConnectionTimeout(250);
 
       HikariConfig configSecondPool = newHikariConfig();
-      configSecondPool.setMetricsTrackerFactory(new PrometheusHistogramMetricsTrackerFactory(defaultCollectorRegistry));
+      configSecondPool.setMetricsTrackerFactory(
+         new PrometheusHistogramMetricsTrackerFactory(defaultCollectorRegistry));
       configSecondPool.setPoolName("second");
       configSecondPool.setJdbcUrl("jdbc:h2:mem:");
       configSecondPool.setMaximumPoolSize(4);
@@ -108,29 +109,30 @@ public class PrometheusHistogramMetricsTrackerTest {
 
       try (HikariDataSource ignoredFirstPool = new HikariDataSource(configFirstPool)) {
          assertThat(defaultCollectorRegistry.getSampleValue(
-            "hikaricp_connection_timeout_total", LABEL_NAMES, labelValuesFirstPool),
+               "hikaricp_connection_timeout_total", LABEL_NAMES, labelValuesFirstPool),
             is(0.0));
 
          try (HikariDataSource ignoredSecondPool = new HikariDataSource(configSecondPool)) {
             assertThat(defaultCollectorRegistry.getSampleValue(
-               "hikaricp_connection_timeout_total", LABEL_NAMES, labelValuesSecondPool),
+                  "hikaricp_connection_timeout_total", LABEL_NAMES, labelValuesSecondPool),
                is(0.0));
          }
       }
    }
 
    @Test
-   public void testMultiplePoolNameWithDifferentCollectorRegistries()
-   {
+   public void testMultiplePoolNameWithDifferentCollectorRegistries() {
       HikariConfig configFirstPool = newHikariConfig();
-      configFirstPool.setMetricsTrackerFactory(new PrometheusHistogramMetricsTrackerFactory(defaultCollectorRegistry));
+      configFirstPool.setMetricsTrackerFactory(
+         new PrometheusHistogramMetricsTrackerFactory(defaultCollectorRegistry));
       configFirstPool.setPoolName("first");
       configFirstPool.setJdbcUrl("jdbc:h2:mem:");
       configFirstPool.setMaximumPoolSize(2);
       configFirstPool.setConnectionTimeout(250);
 
       HikariConfig configSecondPool = newHikariConfig();
-      configSecondPool.setMetricsTrackerFactory(new PrometheusHistogramMetricsTrackerFactory(customCollectorRegistry));
+      configSecondPool.setMetricsTrackerFactory(
+         new PrometheusHistogramMetricsTrackerFactory(customCollectorRegistry));
       configSecondPool.setPoolName("second");
       configSecondPool.setJdbcUrl("jdbc:h2:mem:");
       configSecondPool.setMaximumPoolSize(4);
@@ -141,12 +143,12 @@ public class PrometheusHistogramMetricsTrackerTest {
 
       try (HikariDataSource ignoredFirstPool = new HikariDataSource(configFirstPool)) {
          assertThat(defaultCollectorRegistry.getSampleValue(
-            "hikaricp_connection_timeout_total", LABEL_NAMES, labelValuesFirstPool),
+               "hikaricp_connection_timeout_total", LABEL_NAMES, labelValuesFirstPool),
             is(0.0));
 
          try (HikariDataSource ignoredSecondPool = new HikariDataSource(configSecondPool)) {
             assertThat(customCollectorRegistry.getSampleValue(
-               "hikaricp_connection_timeout_total", LABEL_NAMES, labelValuesSecondPool),
+                  "hikaricp_connection_timeout_total", LABEL_NAMES, labelValuesSecondPool),
                is(0.0));
          }
       }
@@ -154,7 +156,8 @@ public class PrometheusHistogramMetricsTrackerTest {
 
    private void checkSummaryMetricFamily(String metricName) {
       HikariConfig config = newHikariConfig();
-      config.setMetricsTrackerFactory(new PrometheusHistogramMetricsTrackerFactory(defaultCollectorRegistry));
+      config.setMetricsTrackerFactory(
+         new PrometheusHistogramMetricsTrackerFactory(defaultCollectorRegistry));
       config.setJdbcUrl("jdbc:h2:mem:");
 
       try (HikariDataSource ignored = new HikariDataSource(config)) {

@@ -15,30 +15,29 @@
  */
 package com.zaxxer.hikari.pool;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariConfigMXBean;
-import com.zaxxer.hikari.HikariDataSource;
-import com.zaxxer.hikari.HikariPoolMXBean;
-import com.zaxxer.hikari.mocks.StubDataSource;
-import org.junit.Test;
-
-import javax.management.JMX;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import java.lang.management.ManagementFactory;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.TimeUnit;
-
 import static com.zaxxer.hikari.pool.TestElf.getUnsealedConfig;
 import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
 import static com.zaxxer.hikari.util.UtilityElf.quietlySleep;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-public class TestMBean
-{
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariConfigMXBean;
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.HikariPoolMXBean;
+import com.zaxxer.hikari.mocks.StubDataSource;
+import java.lang.management.ManagementFactory;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
+import javax.management.JMX;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import org.junit.Test;
+
+public class TestMBean {
+
    @Test
    public void testMBeanRegistration() {
       HikariConfig config = newHikariConfig();
@@ -53,7 +52,8 @@ public class TestMBean
    }
 
    @Test
-   public void testMBeanReporting() throws SQLException, InterruptedException, MalformedObjectNameException {
+   public void testMBeanReporting()
+      throws SQLException, InterruptedException, MalformedObjectNameException {
       HikariConfig config = newHikariConfig();
       config.setMinimumIdle(3);
       config.setMaximumPoolSize(5);
@@ -72,7 +72,8 @@ public class TestMBean
 
          MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
          ObjectName poolName = new ObjectName("com.zaxxer.hikari:type=Pool (testMBeanReporting)");
-         HikariPoolMXBean hikariPoolMXBean = JMX.newMXBeanProxy(mBeanServer, poolName, HikariPoolMXBean.class);
+         HikariPoolMXBean hikariPoolMXBean = JMX.newMXBeanProxy(mBeanServer, poolName,
+            HikariPoolMXBean.class);
 
          assertEquals(0, hikariPoolMXBean.getActiveConnections());
          assertEquals(3, hikariPoolMXBean.getIdleConnections());
@@ -91,8 +92,7 @@ public class TestMBean
          assertEquals(0, hikariPoolMXBean.getActiveConnections());
          assertEquals(3, hikariPoolMXBean.getIdleConnections());
          assertEquals(3, hikariPoolMXBean.getTotalConnections());
-      }
-      finally {
+      } finally {
          System.clearProperty("com.zaxxer.hikari.housekeeping.periodMs");
       }
 
@@ -105,13 +105,14 @@ public class TestMBean
          TimeUnit.SECONDS.sleep(1);
 
          MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-         ObjectName poolName = new ObjectName("com.zaxxer.hikari:type=Pool,name=testMBeanReporting");
-         HikariPoolMXBean hikariPoolMXBean = JMX.newMXBeanProxy(mBeanServer, poolName, HikariPoolMXBean.class);
+         ObjectName poolName = new ObjectName(
+            "com.zaxxer.hikari:type=Pool,name=testMBeanReporting");
+         HikariPoolMXBean hikariPoolMXBean = JMX.newMXBeanProxy(mBeanServer, poolName,
+            HikariPoolMXBean.class);
 
          assertEquals(0, hikariPoolMXBean.getActiveConnections());
          assertEquals(3, hikariPoolMXBean.getIdleConnections());
-      }
-      finally {
+      } finally {
          System.clearProperty("hikaricp.jmx.register2.0");
       }
    }
@@ -159,14 +160,12 @@ public class TestMBean
          quietlySleep(500);
 
          try (Connection conn1 = ds.getConnection();
-              Connection conn2 = ds.getConnection()) {
+            Connection conn2 = ds.getConnection()) {
             fail("Connection should have timed out.");
-         }
-         catch (SQLException e) {
+         } catch (SQLException e) {
             assertEquals(1000, ds.getConnectionTimeout());
          }
-      }
-      finally {
+      } finally {
          System.clearProperty("com.zaxxer.hikari.housekeeping.periodMs");
       }
    }

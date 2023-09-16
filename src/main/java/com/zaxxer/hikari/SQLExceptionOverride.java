@@ -11,6 +11,7 @@ import java.sql.SQLException;
  * method returns {@link Override#DO_NOT_EVICT} the eviction will be elided.
  */
 public interface SQLExceptionOverride {
+
    enum Override {
       CONTINUE_EVICT,
       DO_NOT_EVICT
@@ -23,8 +24,7 @@ public interface SQLExceptionOverride {
     * @param sqlException the #SQLException to adjudicate
     * @return either one of {@link Override#CONTINUE_EVICT} or {@link Override#DO_NOT_EVICT}
     */
-   default Override adjudicate(final SQLException sqlException)
-   {
+   default Override adjudicate(final SQLException sqlException) {
       return Override.CONTINUE_EVICT;
    }
 }

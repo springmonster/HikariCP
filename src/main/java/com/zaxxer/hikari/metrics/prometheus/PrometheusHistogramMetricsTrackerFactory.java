@@ -12,9 +12,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package com.zaxxer.hikari.metrics.prometheus;
+
+import static com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory.RegistrationStatus.REGISTERED;
 
 import com.zaxxer.hikari.metrics.IMetricsTracker;
 import com.zaxxer.hikari.metrics.MetricsTrackerFactory;
@@ -22,11 +24,8 @@ import com.zaxxer.hikari.metrics.PoolStats;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory.RegistrationStatus;
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory.RegistrationStatus.*;
 
 /**
  * <pre>{@code
@@ -62,7 +61,8 @@ public class PrometheusHistogramMetricsTrackerFactory implements MetricsTrackerF
    public IMetricsTracker create(String poolName, PoolStats poolStats) {
       registerCollector(this.collector, this.collectorRegistry);
       this.collector.add(poolName, poolStats);
-      return new PrometheusHistogramMetricsTracker(poolName, this.collectorRegistry, this.collector);
+      return new PrometheusHistogramMetricsTracker(poolName, this.collectorRegistry,
+         this.collector);
    }
 
    private void registerCollector(Collector collector, CollectorRegistry collectorRegistry) {

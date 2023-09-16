@@ -16,8 +16,8 @@
 
 package com.zaxxer.hikari.metrics;
 
-public interface MetricsTrackerFactory
-{
+public interface MetricsTrackerFactory {
+
    /**
     * Create an instance of an IMetricsTracker.
     *

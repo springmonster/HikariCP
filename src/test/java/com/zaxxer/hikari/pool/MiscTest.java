@@ -16,8 +16,8 @@
 
 package com.zaxxer.hikari.pool;
 
-import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
 import static com.zaxxer.hikari.pool.TestElf.getPool;
+import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
 import static com.zaxxer.hikari.pool.TestElf.setConfigUnitTest;
 import static com.zaxxer.hikari.pool.TestElf.setSlf4jLogLevel;
 import static com.zaxxer.hikari.pool.TestElf.setSlf4jTargetStream;
@@ -31,6 +31,8 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -38,21 +40,16 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.logging.log4j.Level;
 import org.junit.Test;
-
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * @author Brett Wooldridge
  */
-public class MiscTest
-{
+public class MiscTest {
+
    @Test
-   public void testLogWriter() throws SQLException
-   {
+   public void testLogWriter() throws SQLException {
       HikariConfig config = newHikariConfig();
       config.setMinimumIdle(0);
       config.setMaximumPoolSize(4);
@@ -64,40 +61,33 @@ public class MiscTest
          ds.setLogWriter(writer);
          assertSame(writer, ds.getLogWriter());
          assertEquals("testLogWriter", config.getPoolName());
-      }
-      finally
-      {
+      } finally {
          setConfigUnitTest(false);
       }
    }
 
    @Test
-   public void testInvalidIsolation()
-   {
+   public void testInvalidIsolation() {
       try {
          getTransactionIsolation("INVALID");
          fail();
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
          assertTrue(e instanceof IllegalArgumentException);
       }
    }
 
    @Test
-   public void testCreateInstance()
-   {
+   public void testCreateInstance() {
       try {
          createInstance("invalid", null);
          fail();
-      }
-      catch (RuntimeException e) {
+      } catch (RuntimeException e) {
          assertTrue(e.getCause() instanceof ClassNotFoundException);
       }
    }
 
    @Test
-   public void testLeakDetection() throws Exception
-   {
+   public void testLeakDetection() throws Exception {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       try (PrintStream ps = new PrintStream(baos, true)) {
          setSlf4jTargetStream(Class.forName("com.zaxxer.hikari.pool.ProxyLeakTask"), ps);
@@ -122,11 +112,11 @@ public class MiscTest
                ps.close();
                String s = new String(baos.toByteArray());
                assertNotNull("Exception string was null", s);
-               assertTrue("Expected exception to contain 'Connection leak detection' but contains *" + s + "*", s.contains("Connection leak detection"));
+               assertTrue(
+                  "Expected exception to contain 'Connection leak detection' but contains *" + s
+                     + "*", s.contains("Connection leak detection"));
             }
-         }
-         finally
-         {
+         } finally {
             setConfigUnitTest(false);
             setSlf4jLogLevel(HikariPool.class, Level.INFO);
          }

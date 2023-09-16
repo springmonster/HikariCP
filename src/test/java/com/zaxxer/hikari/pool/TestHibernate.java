@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package com.zaxxer.hikari.pool;
 
@@ -20,19 +20,16 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import com.zaxxer.hikari.hibernate.HikariConnectionProvider;
 import java.sql.Connection;
 import java.util.Properties;
-
 import org.hibernate.service.UnknownUnwrapTypeException;
 import org.junit.Test;
 
-import com.zaxxer.hikari.hibernate.HikariConnectionProvider;
+public class TestHibernate {
 
-public class TestHibernate
-{
    @Test
-   public void testConnectionProvider() throws Exception
-   {
+   public void testConnectionProvider() throws Exception {
       HikariConnectionProvider provider = new HikariConnectionProvider();
 
       Properties props = new Properties();
@@ -48,8 +45,7 @@ public class TestHibernate
       try {
          provider.unwrap(TestHibernate.class);
          fail("Expected exception");
-      }
-      catch (UnknownUnwrapTypeException e) {
+      } catch (UnknownUnwrapTypeException e) {
       }
 
       provider.stop();

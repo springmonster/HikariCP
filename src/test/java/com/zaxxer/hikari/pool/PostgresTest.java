@@ -21,38 +21,37 @@ import static com.zaxxer.hikari.util.ClockSource.currentTime;
 import static com.zaxxer.hikari.util.ClockSource.elapsedMillis;
 import static com.zaxxer.hikari.util.UtilityElf.quietlySleep;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.junit.After;
 import org.junit.Before;
-
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import org.junit.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-public class PostgresTest
-{
+public class PostgresTest {
+
    private static final DockerImageName IMAGE_NAME = DockerImageName.parse("postgres:9.6.20");
 
    private PostgreSQLContainer<?> postgres;
 
    @Before
    public void beforeTest() {
-     postgres = new PostgreSQLContainer<>(IMAGE_NAME);
-     postgres.start();
+      postgres = new PostgreSQLContainer<>(IMAGE_NAME);
+      postgres.start();
    }
 
    @After
    public void afterTest() {
-     postgres.stop();
+      postgres.stop();
    }
 
    @Test
@@ -68,8 +67,7 @@ public class PostgresTest
    }
 
    @Test
-   public void testCase2() throws Exception
-   {
+   public void testCase2() throws Exception {
       HikariConfig config = createConfig(postgres);
       config.setMinimumIdle(3);
       config.setMaximumPoolSize(10);
@@ -80,8 +78,7 @@ public class PostgresTest
    }
 
    @Test
-   public void testCase3() throws Exception
-   {
+   public void testCase3() throws Exception {
       HikariConfig config = createConfig(postgres);
       config.setMinimumIdle(3);
       config.setMaximumPoolSize(10);
@@ -92,8 +89,7 @@ public class PostgresTest
    }
 
    @Test
-   public void testCase4() throws Exception
-   {
+   public void testCase4() throws Exception {
       HikariConfig config = createConfig(postgres);
       config.setMinimumIdle(0);
       config.setMaximumPoolSize(15);
@@ -124,19 +120,19 @@ public class PostgresTest
    }
 
    static private void assertZeroErrors(List<PostgresWorkerThread> threads) {
-     for (PostgresWorkerThread t : threads) {
-        assertEquals(0, t.getErrorCount());
-     }
+      for (PostgresWorkerThread t : threads) {
+         assertEquals(0, t.getErrorCount());
+      }
    }
 
    static List<PostgresWorkerThread> startThreads(HikariDataSource ds, int numThreads) {
-     List<PostgresWorkerThread> threads = new ArrayList<>();
-     for (int i = 0; i < numThreads; i++) {
-        PostgresWorkerThread t = new PostgresWorkerThread(ds);
-        t.start();
-        threads.add(t);
-     }
-     return threads;
+      List<PostgresWorkerThread> threads = new ArrayList<>();
+      for (int i = 0; i < numThreads; i++) {
+         PostgresWorkerThread t = new PostgresWorkerThread(ds);
+         t.start();
+         threads.add(t);
+      }
+      return threads;
    }
 
    static void stopThreads(List<PostgresWorkerThread> threads) {
@@ -146,6 +142,7 @@ public class PostgresTest
    }
 
    static class PostgresWorkerThread extends Thread {
+
       static private final AtomicInteger id = new AtomicInteger(0);
       private final HikariDataSource dataSource;
       private int errorCount = 0;
@@ -158,7 +155,7 @@ public class PostgresTest
       }
 
       public void requestStop() {
-        stopRequested.set(true);
+         stopRequested.set(true);
          System.err.println("[" + getName() + "] stopRequested()");
       }
 
@@ -180,8 +177,7 @@ public class PostgresTest
    }
 
    @Before
-   public void before()
-   {
+   public void before() {
       System.err.println("\n");
    }
 

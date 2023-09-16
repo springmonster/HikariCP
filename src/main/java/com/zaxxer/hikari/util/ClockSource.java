@@ -32,8 +32,8 @@ import java.util.concurrent.TimeUnit;
  *
  * @author Brett Wooldridge
  */
-public interface ClockSource
-{
+public interface ClockSource {
+
    static ClockSource CLOCK = Factory.create();
 
    /**
@@ -178,15 +178,16 @@ public interface ClockSource
       return sb.toString();
    }
 
-   TimeUnit[] TIMEUNITS_DESCENDING = {DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS, MICROSECONDS, NANOSECONDS};
+   TimeUnit[] TIMEUNITS_DESCENDING = {DAYS, HOURS, MINUTES, SECONDS, MILLISECONDS, MICROSECONDS,
+      NANOSECONDS};
 
    String[] TIMEUNIT_DISPLAY_VALUES = {"ns", "µs", "ms", "s", "m", "h", "d"};
 
    /**
     * Factory class used to create a platform-specific ClockSource.
     */
-   class Factory
-   {
+   class Factory {
+
       private static ClockSource create() {
          String os = System.getProperty("os.name");
          if ("Mac OS X".equals(os)) {
@@ -197,8 +198,8 @@ public interface ClockSource
       }
    }
 
-   final class MillisecondClockSource implements ClockSource
-   {
+   final class MillisecondClockSource implements ClockSource {
+
       /** {@inheritDoc} */
       @Override
       public long currentTime0() {
@@ -254,8 +255,8 @@ public interface ClockSource
       }
    }
 
-   class NanosecondClockSource implements ClockSource
-   {
+   class NanosecondClockSource implements ClockSource {
+
       /** {@inheritDoc} */
       @Override
       public long currentTime0() {

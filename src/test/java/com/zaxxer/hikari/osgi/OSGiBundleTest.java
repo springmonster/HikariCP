@@ -15,6 +15,18 @@
  */
 package com.zaxxer.hikari.osgi;
 
+import static com.zaxxer.hikari.pool.TestElf.isJava11;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.ops4j.pax.exam.CoreOptions.bundle;
+import static org.ops4j.pax.exam.CoreOptions.cleanCaches;
+import static org.ops4j.pax.exam.CoreOptions.junitBundles;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.CoreOptions.options;
+import static org.ops4j.pax.exam.CoreOptions.systemProperty;
+
+import java.io.File;
+import javax.inject.Inject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runner.manipulation.Filter;
@@ -27,29 +39,19 @@ import org.ops4j.pax.exam.junit.PaxExam;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
-import javax.inject.Inject;
-import java.io.File;
-
-import static com.zaxxer.hikari.pool.TestElf.isJava11;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.ops4j.pax.exam.CoreOptions.*;
-
 /**
  * @author lburgazzoli
  */
 @RunWith(OSGiBundleTest.ConditionalPaxExam.class)
-public class OSGiBundleTest
-{
+public class OSGiBundleTest {
+
    @Test
-   public void checkInject()
-   {
+   public void checkInject() {
       assertNotNull(context);
    }
 
    @Test
-   public void checkBundle()
-   {
+   public void checkBundle() {
       Boolean bundleFound = false;
       Boolean bundleActive = false;
 
@@ -73,8 +75,7 @@ public class OSGiBundleTest
    BundleContext context;
 
    @Configuration
-   public Option[] config()
-   {
+   public Option[] config() {
       return options(
          systemProperty("org.osgi.framework.storage.clean").value("true"),
          systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("WARN"),
@@ -88,8 +89,8 @@ public class OSGiBundleTest
       );
    }
 
-   public static class ConditionalPaxExam extends PaxExam
-   {
+   public static class ConditionalPaxExam extends PaxExam {
+
       public ConditionalPaxExam(Class<?> klass) throws InitializationError {
          super(klass);
       }

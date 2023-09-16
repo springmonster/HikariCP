@@ -17,25 +17,29 @@
 package com.zaxxer.hikari;
 
 import com.zaxxer.hikari.util.PropertyElf;
-
-import javax.naming.*;
-import javax.naming.spi.ObjectFactory;
-import javax.sql.DataSource;
 import java.util.Hashtable;
 import java.util.Properties;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.Name;
+import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.naming.spi.ObjectFactory;
+import javax.sql.DataSource;
 
 /**
  * A JNDI factory that produces HikariDataSource instances.
  *
  * @author Brett Wooldridge
  */
-public class HikariJNDIFactory implements ObjectFactory
-{
+public class HikariJNDIFactory implements ObjectFactory {
+
    @Override
-   synchronized public Object getObjectInstance(Object obj, Name name, Context nameCtx, Hashtable<?, ?> environment) throws Exception
-   {
+   synchronized public Object getObjectInstance(Object obj, Name name, Context nameCtx,
+      Hashtable<?, ?> environment) throws Exception {
       // We only know how to deal with <code>javax.naming.Reference</code> that specify a class name of "javax.sql.DataSource"
-      if (obj instanceof Reference && "javax.sql.DataSource".equals(((Reference) obj).getClassName())) {
+      if (obj instanceof Reference && "javax.sql.DataSource".equals(
+         ((Reference) obj).getClassName())) {
          var ref = (Reference) obj;
          var hikariPropSet = PropertyElf.getPropertyNames(HikariConfig.class);
 
@@ -53,8 +57,8 @@ public class HikariJNDIFactory implements ObjectFactory
       return null;
    }
 
-   private DataSource createDataSource(final Properties properties, final Context context) throws NamingException
-   {
+   private DataSource createDataSource(final Properties properties, final Context context)
+      throws NamingException {
       var jndiName = properties.getProperty("dataSourceJNDI");
       if (jndiName != null) {
          return lookupJndiDataSource(properties, context, jndiName);
@@ -63,8 +67,8 @@ public class HikariJNDIFactory implements ObjectFactory
       return new HikariDataSource(new HikariConfig(properties));
    }
 
-   private DataSource lookupJndiDataSource(final Properties properties, final Context context, final String jndiName) throws NamingException
-   {
+   private DataSource lookupJndiDataSource(final Properties properties, final Context context,
+      final String jndiName) throws NamingException {
       if (context == null) {
          throw new RuntimeException("JNDI context does not found for dataSourceJNDI : " + jndiName);
       }

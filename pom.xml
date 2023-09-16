@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
 
    <properties>
@@ -315,7 +317,9 @@
                <executable>java</executable>
                <arguments>
                   <argument>-cp</argument>
-                  <argument>${project.build.outputDirectory}${path.separator}${maven.compile.classpath}</argument>
+                  <argument>
+                     ${project.build.outputDirectory}${path.separator}${maven.compile.classpath}
+                  </argument>
                   <argument>com.zaxxer.hikari.util.JavassistProxyFactory</argument>
                   <argument>${project.basedir}${file.separator}</argument>
                </arguments>
@@ -470,7 +474,8 @@
                      org.hibernate.service;resolution:=optional,
                      org.hibernate.service.spi;resolution:=optional
                   </Import-Package>
-                  <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                  <Bundle-SymbolicName>${project.groupId}.${project.artifactId}
+                  </Bundle-SymbolicName>
                   <DynamicImport-Package>*</DynamicImport-Package>
                </instructions>
             </configuration>

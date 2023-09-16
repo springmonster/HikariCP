@@ -16,57 +16,54 @@
 
 package com.zaxxer.hikari.db;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import com.zaxxer.hikari.pool.HikariPool;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 import static com.zaxxer.hikari.pool.TestElf.getPool;
-import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
 import static com.zaxxer.hikari.pool.TestElf.getUnsealedConfig;
+import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.pool.HikariPool;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 /**
  * @author brettw
  *
  */
-public class BasicPoolTest
-{
-   @Before
-   public void setup() throws SQLException
-   {
-       HikariConfig config = newHikariConfig();
-       config.setMinimumIdle(1);
-       config.setMaximumPoolSize(2);
-       config.setConnectionTestQuery("SELECT 1");
-       config.setDataSourceClassName("org.h2.jdbcx.JdbcDataSource");
-       config.addDataSourceProperty("url", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+public class BasicPoolTest {
 
-       try (HikariDataSource ds = new HikariDataSource(config);
-            Connection conn = ds.getConnection();
-            Statement stmt = conn.createStatement()) {
-          stmt.execute("DROP TABLE IF EXISTS basic_pool_test");
-          stmt.execute("CREATE TABLE basic_pool_test ("
-                            + "id INTEGER NOT NULL PRIMARY KEY, "
-                            + "timestamp TIMESTAMP, "
-                            + "string VARCHAR(128), "
-                            + "string_from_number NUMERIC "
-                            + ")");
-       }
+   @Before
+   public void setup() throws SQLException {
+      HikariConfig config = newHikariConfig();
+      config.setMinimumIdle(1);
+      config.setMaximumPoolSize(2);
+      config.setConnectionTestQuery("SELECT 1");
+      config.setDataSourceClassName("org.h2.jdbcx.JdbcDataSource");
+      config.addDataSourceProperty("url", "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+
+      try (HikariDataSource ds = new HikariDataSource(config);
+         Connection conn = ds.getConnection();
+         Statement stmt = conn.createStatement()) {
+         stmt.execute("DROP TABLE IF EXISTS basic_pool_test");
+         stmt.execute("CREATE TABLE basic_pool_test ("
+            + "id INTEGER NOT NULL PRIMARY KEY, "
+            + "timestamp TIMESTAMP, "
+            + "string VARCHAR(128), "
+            + "string_from_number NUMERIC "
+            + ")");
+      }
    }
 
    @Test
-   public void testIdleTimeout() throws InterruptedException, SQLException
-   {
+   public void testIdleTimeout() throws InterruptedException, SQLException {
       HikariConfig config = newHikariConfig();
       config.setMinimumIdle(5);
       config.setMaximumPoolSize(10);
@@ -107,8 +104,7 @@ public class BasicPoolTest
    }
 
    @Test
-   public void testIdleTimeout2() throws InterruptedException, SQLException
-   {
+   public void testIdleTimeout2() throws InterruptedException, SQLException {
       HikariConfig config = newHikariConfig();
       config.setMaximumPoolSize(50);
       config.setConnectionTestQuery("SELECT 1");
@@ -134,7 +130,8 @@ public class BasicPoolTest
 
             MILLISECONDS.sleep(1500);
 
-            assertEquals("Second total connections not as expected", 50, pool.getTotalConnections());
+            assertEquals("Second total connections not as expected", 50,
+               pool.getTotalConnections());
             assertEquals("Second idle connections not as expected", 49, pool.getIdleConnections());
          }
 

@@ -1,17 +1,16 @@
 package com.zaxxer.hikari.metrics.prometheus;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import com.zaxxer.hikari.metrics.PoolStats;
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
-import org.junit.After;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.After;
+import org.junit.Test;
 
 public class PrometheusHistogramMetricsTrackerFactoryTest {
 
@@ -33,7 +32,7 @@ public class PrometheusHistogramMetricsTrackerFactoryTest {
    }
 
    @After
-   public void clearCollectorRegistry(){
+   public void clearCollectorRegistry() {
       CollectorRegistry.defaultRegistry.clear();
    }
 

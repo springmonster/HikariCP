@@ -1,20 +1,18 @@
 package com.zaxxer.hikari.datasource;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import org.junit.Test;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
 import static org.junit.Assert.fail;
 
-public class TestSealedConfig
-{
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import org.junit.Test;
+
+public class TestSealedConfig {
+
    @Test(expected = IllegalStateException.class)
-   public void testSealed1() throws SQLException
-   {
+   public void testSealed1() throws SQLException {
       HikariConfig config = newHikariConfig();
       config.setDataSourceClassName("com.zaxxer.hikari.mocks.StubDataSource");
 
@@ -25,8 +23,7 @@ public class TestSealedConfig
    }
 
    @Test(expected = IllegalStateException.class)
-   public void testSealed2() throws SQLException
-   {
+   public void testSealed2() throws SQLException {
       HikariDataSource ds = new HikariDataSource();
       ds.setDataSourceClassName("com.zaxxer.hikari.mocks.StubDataSource");
 
@@ -39,8 +36,7 @@ public class TestSealedConfig
    }
 
    @Test(expected = IllegalStateException.class)
-   public void testSealed3() throws SQLException
-   {
+   public void testSealed3() throws SQLException {
       HikariDataSource ds = new HikariDataSource();
       ds.setDataSourceClassName("com.zaxxer.hikari.mocks.StubDataSource");
 
@@ -53,8 +49,7 @@ public class TestSealedConfig
    }
 
    @Test
-   public void testSealedAccessibleMethods() throws SQLException
-   {
+   public void testSealedAccessibleMethods() throws SQLException {
       HikariConfig config = newHikariConfig();
       config.setDataSourceClassName("com.zaxxer.hikari.mocks.StubDataSource");
 

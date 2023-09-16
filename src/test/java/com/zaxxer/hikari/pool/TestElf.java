@@ -19,6 +19,12 @@ package com.zaxxer.hikari.pool;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.util.ConcurrentBag;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.reflect.Field;
+import java.net.URL;
+import java.sql.Connection;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LogEvent;
@@ -29,20 +35,13 @@ import org.apache.logging.log4j.core.layout.CsvLogEventLayout;
 import org.apache.logging.slf4j.Log4jLogger;
 import org.slf4j.LoggerFactory;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.lang.reflect.Field;
-import java.net.URL;
-import java.sql.Connection;
-
 /**
  * Utility methods for testing.
  *
  * @author Brett Wooldridge
  */
-public final class TestElf
-{
+public final class TestElf {
+
    private TestElf() {
       // default constructor
    }
@@ -51,32 +50,27 @@ public final class TestElf
       return Integer.parseInt(System.getProperty("java.version").split("\\.")[0]) >= 11;
    }
 
-   public static HikariPool getPool(final HikariDataSource ds)
-   {
+   public static HikariPool getPool(final HikariDataSource ds) {
       try {
          Field field = ds.getClass().getDeclaredField("pool");
          field.setAccessible(true);
          return (HikariPool) field.get(ds);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
          throw new RuntimeException(e);
       }
    }
 
-   static ConcurrentBag<?> getConcurrentBag(final HikariDataSource ds)
-   {
+   static ConcurrentBag<?> getConcurrentBag(final HikariDataSource ds) {
       try {
          Field field = HikariPool.class.getDeclaredField("connectionBag");
          field.setAccessible(true);
          return (ConcurrentBag<?>) field.get(getPool(ds));
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
          throw new RuntimeException(e);
       }
    }
 
-   public static HikariConfig getUnsealedConfig(final HikariDataSource ds)
-   {
+   public static HikariConfig getUnsealedConfig(final HikariDataSource ds) {
       try {
          HikariPool pool = getPool(ds);
          Field configField = PoolBase.class.getDeclaredField("config");
@@ -87,42 +81,37 @@ public final class TestElf
          field.setAccessible(true);
          field.setBoolean(config, false);
          return config;
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
          throw new RuntimeException(e);
       }
    }
 
-   static boolean getConnectionCommitDirtyState(final Connection connection)
-   {
+   static boolean getConnectionCommitDirtyState(final Connection connection) {
       try {
          Field field = ProxyConnection.class.getDeclaredField("isCommitStateDirty");
          field.setAccessible(true);
          return field.getBoolean(connection);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
          throw new RuntimeException(e);
       }
    }
 
-   static void setConfigUnitTest(final boolean unitTest)
-   {
+   static void setConfigUnitTest(final boolean unitTest) {
       try {
          Field field = HikariConfig.class.getDeclaredField("unitTest");
          field.setAccessible(true);
          field.setBoolean(null, unitTest);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
          throw new RuntimeException(e);
       }
    }
 
-   static void setSlf4jTargetStream(final Class<?> clazz, final PrintStream stream)
-   {
+   static void setSlf4jTargetStream(final Class<?> clazz, final PrintStream stream) {
       try {
          Log4jLogger log4Jlogger = (Log4jLogger) LoggerFactory.getLogger(clazz);
 
-         Field field = clazz.getClassLoader().loadClass("org.apache.logging.slf4j.Log4jLogger").getDeclaredField("logger");
+         Field field = clazz.getClassLoader().loadClass("org.apache.logging.slf4j.Log4jLogger")
+            .getDeclaredField("logger");
          field.setAccessible(true);
 
          Logger logger = (Logger) field.get(log4Jlogger);
@@ -132,30 +121,27 @@ public final class TestElf
          }
 
          logger.addAppender(new StringAppender("string", stream));
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
          throw new RuntimeException(e);
       }
    }
 
-   static void setSlf4jLogLevel(final Class<?> clazz, final Level logLevel)
-   {
+   static void setSlf4jLogLevel(final Class<?> clazz, final Level logLevel) {
       try {
          Log4jLogger log4Jlogger = (Log4jLogger) LoggerFactory.getLogger(clazz);
 
-         Field field = clazz.getClassLoader().loadClass("org.apache.logging.slf4j.Log4jLogger").getDeclaredField("logger");
+         Field field = clazz.getClassLoader().loadClass("org.apache.logging.slf4j.Log4jLogger")
+            .getDeclaredField("logger");
          field.setAccessible(true);
 
          Logger logger = (Logger) field.get(log4Jlogger);
          logger.setLevel(logLevel);
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
          throw new RuntimeException(e);
       }
    }
 
-   public static HikariConfig newHikariConfig()
-   {
+   public static HikariConfig newHikariConfig() {
       final StackTraceElement callerStackTrace = Thread.currentThread().getStackTrace()[2];
 
       String poolName = callerStackTrace.getMethodName();
@@ -168,8 +154,7 @@ public final class TestElf
       return config;
    }
 
-   static HikariDataSource newHikariDataSource()
-   {
+   static HikariDataSource newHikariDataSource() {
       final StackTraceElement callerStackTrace = Thread.currentThread().getStackTrace()[2];
 
       String poolName = callerStackTrace.getMethodName();
@@ -182,30 +167,27 @@ public final class TestElf
       return ds;
    }
 
-   private static class StringAppender extends AbstractAppender
-   {
+   private static class StringAppender extends AbstractAppender {
+
       private PrintStream stream;
 
-      StringAppender(final String name, final PrintStream stream)
-      {
+      StringAppender(final String name, final PrintStream stream) {
          super(name, null, CsvLogEventLayout.createDefaultLayout(), true, Property.EMPTY_ARRAY);
          this.stream = stream;
       }
 
       @Override
-      public void append(final LogEvent event)
-      {
+      public void append(final LogEvent event) {
          stream.println(event.getMessage().getFormattedMessage());
       }
    }
 
-   public static class FauxWebClassLoader extends ClassLoader
-   {
+   public static class FauxWebClassLoader extends ClassLoader {
+
       static final byte[] classBytes = new byte[16_000];
 
       @Override
-      public Class<?> loadClass(final String name) throws ClassNotFoundException
-      {
+      public Class<?> loadClass(final String name) throws ClassNotFoundException {
          if (name.startsWith("java") || name.startsWith("org")) {
             return super.loadClass(name, true);
          }
@@ -223,8 +205,7 @@ public final class TestElf
             }
 
             return defineClass(name, classBytes, 0, read);
-         }
-         catch (IOException e) {
+         } catch (IOException e) {
             throw new ClassNotFoundException(name);
          }
       }

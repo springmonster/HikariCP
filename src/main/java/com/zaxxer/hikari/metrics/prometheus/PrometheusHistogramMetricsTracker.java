@@ -15,16 +15,15 @@
  */
 package com.zaxxer.hikari.metrics.prometheus;
 
+import static com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory.RegistrationStatus;
+import static com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory.RegistrationStatus.REGISTERED;
+
 import com.zaxxer.hikari.metrics.IMetricsTracker;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Counter;
 import io.prometheus.client.Histogram;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory.*;
-import static com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory.RegistrationStatus.REGISTERED;
 
 /**
  * Alternative Prometheus metrics tracker using a Histogram instead of Summary
@@ -34,8 +33,8 @@ import static com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFacto
  *
  * @see PrometheusMetricsTracker
  */
-class PrometheusHistogramMetricsTracker implements IMetricsTracker
-{
+class PrometheusHistogramMetricsTracker implements IMetricsTracker {
+
    private static final Counter CONNECTION_TIMEOUT_COUNTER = Counter.build()
       .name("hikaricp_connection_timeout_total")
       .labelNames("pool")
@@ -43,7 +42,8 @@ class PrometheusHistogramMetricsTracker implements IMetricsTracker
       .create();
 
    private static final Histogram ELAPSED_ACQUIRED_HISTOGRAM =
-      registerHistogram("hikaricp_connection_acquired_nanos", "Connection acquired time (ns)", 1_000);
+      registerHistogram("hikaricp_connection_acquired_nanos", "Connection acquired time (ns)",
+         1_000);
 
    private static final Histogram ELAPSED_BORROWED_HISTOGRAM =
       registerHistogram("hikaricp_connection_usage_millis", "Connection usage (ms)", 1);
@@ -71,7 +71,8 @@ class PrometheusHistogramMetricsTracker implements IMetricsTracker
    private final Histogram.Child elapsedBorrowedHistogramChild;
    private final Histogram.Child elapsedCreationHistogramChild;
 
-   PrometheusHistogramMetricsTracker(String poolName, CollectorRegistry collectorRegistry, HikariCPCollector hikariCPCollector) {
+   PrometheusHistogramMetricsTracker(String poolName, CollectorRegistry collectorRegistry,
+      HikariCPCollector hikariCPCollector) {
       registerMetrics(collectorRegistry);
       this.poolName = poolName;
       this.hikariCPCollector = hikariCPCollector;

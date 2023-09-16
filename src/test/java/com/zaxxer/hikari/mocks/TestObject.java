@@ -1,28 +1,24 @@
 package com.zaxxer.hikari.mocks;
 
-public class TestObject
-{
+public class TestObject {
+
    private TestObject testObject;
    private String string;
    private short shortRaw;
 
-   public void setTestObject(TestObject testObject)
-   {
+   public void setTestObject(TestObject testObject) {
       this.testObject = testObject;
    }
 
-   public void setString(String string)
-   {
+   public void setString(String string) {
       this.string = string;
    }
 
-   public TestObject getTestObject()
-   {
+   public TestObject getTestObject() {
       return testObject;
    }
 
-   public String getString()
-   {
+   public String getString() {
       return string;
    }
 

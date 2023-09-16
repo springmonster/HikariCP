@@ -19,7 +19,6 @@ package com.zaxxer.hikari.metrics.prometheus;
 import com.zaxxer.hikari.metrics.PoolStats;
 import io.prometheus.client.Collector;
 import io.prometheus.client.GaugeMetricFamily;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -27,16 +26,14 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-class HikariCPCollector extends Collector
-{
+class HikariCPCollector extends Collector {
 
    private static final List<String> LABEL_NAMES = Collections.singletonList("pool");
 
    private final Map<String, PoolStats> poolStatsMap = new ConcurrentHashMap<>();
 
    @Override
-   public List<MetricFamilySamples> collect()
-   {
+   public List<MetricFamilySamples> collect() {
       return Arrays.asList(
          createGauge("hikaricp_active_connections", "Active connections",
             PoolStats::getActiveConnections),
@@ -53,19 +50,16 @@ class HikariCPCollector extends Collector
       );
    }
 
-   void add(String name, PoolStats poolStats)
-   {
+   void add(String name, PoolStats poolStats) {
       poolStatsMap.put(name, poolStats);
    }
 
-   void remove(String name)
-   {
+   void remove(String name) {
       poolStatsMap.remove(name);
    }
 
    private GaugeMetricFamily createGauge(String metric, String help,
-                                         Function<PoolStats, Integer> metricValueFunction)
-   {
+      Function<PoolStats, Integer> metricValueFunction) {
       var metricFamily = new GaugeMetricFamily(metric, help, LABEL_NAMES);
       poolStatsMap.forEach((k, v) -> metricFamily.addMetric(
          Collections.singletonList(k),

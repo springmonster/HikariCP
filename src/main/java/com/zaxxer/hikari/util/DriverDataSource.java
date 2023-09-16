@@ -22,14 +22,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
-
 import javax.sql.DataSource;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class DriverDataSource implements DataSource
-{
+public final class DriverDataSource implements DataSource {
+
    private static final Logger LOGGER = LoggerFactory.getLogger(DriverDataSource.class);
    private static final String PASSWORD = "password";
    private static final String USER = "user";
@@ -38,8 +36,8 @@ public final class DriverDataSource implements DataSource
    private final Properties driverProperties;
    private Driver driver;
 
-   public DriverDataSource(String jdbcUrl, String driverClassName, Properties properties, String username, String password)
-   {
+   public DriverDataSource(String jdbcUrl, String driverClassName, Properties properties,
+      String username, String password) {
       this.jdbcUrl = jdbcUrl;
       this.driverProperties = new Properties();
 
@@ -65,64 +63,72 @@ public final class DriverDataSource implements DataSource
          }
 
          if (driver == null) {
-            LOGGER.warn("Registered driver with driverClassName={} was not found, trying direct instantiation.", driverClassName);
+            LOGGER.warn(
+               "Registered driver with driverClassName={} was not found, trying direct instantiation.",
+               driverClassName);
             Class<?> driverClass = null;
             var threadContextClassLoader = Thread.currentThread().getContextClassLoader();
             try {
                if (threadContextClassLoader != null) {
                   try {
                      driverClass = threadContextClassLoader.loadClass(driverClassName);
-                     LOGGER.debug("Driver class {} found in Thread context class loader {}", driverClassName, threadContextClassLoader);
-                  }
-                  catch (ClassNotFoundException e) {
-                     LOGGER.debug("Driver class {} not found in Thread context class loader {}, trying classloader {}",
-                                  driverClassName, threadContextClassLoader, this.getClass().getClassLoader());
+                     LOGGER.debug("Driver class {} found in Thread context class loader {}",
+                        driverClassName, threadContextClassLoader);
+                  } catch (ClassNotFoundException e) {
+                     LOGGER.debug(
+                        "Driver class {} not found in Thread context class loader {}, trying classloader {}",
+                        driverClassName, threadContextClassLoader,
+                        this.getClass().getClassLoader());
                   }
                }
 
                if (driverClass == null) {
                   driverClass = this.getClass().getClassLoader().loadClass(driverClassName);
-                  LOGGER.debug("Driver class {} found in the HikariConfig class classloader {}", driverClassName, this.getClass().getClassLoader());
+                  LOGGER.debug("Driver class {} found in the HikariConfig class classloader {}",
+                     driverClassName, this.getClass().getClassLoader());
                }
             } catch (ClassNotFoundException e) {
-               LOGGER.debug("Failed to load driver class {} from HikariConfig class classloader {}", driverClassName, this.getClass().getClassLoader());
+               LOGGER.debug("Failed to load driver class {} from HikariConfig class classloader {}",
+                  driverClassName, this.getClass().getClassLoader());
             }
 
             if (driverClass != null) {
                try {
                   driver = (Driver) driverClass.getDeclaredConstructor().newInstance();
                } catch (Exception e) {
-                  LOGGER.warn("Failed to create instance of driver class {}, trying jdbcUrl resolution", driverClassName, e);
+                  LOGGER.warn(
+                     "Failed to create instance of driver class {}, trying jdbcUrl resolution",
+                     driverClassName, e);
                }
             }
          }
       }
 
-      final var sanitizedUrl = jdbcUrl.replaceAll("([?&;][^&#;=]*[pP]assword=)[^&#;]*", "$1<masked>");
-      
+      final var sanitizedUrl = jdbcUrl.replaceAll("([?&;][^&#;=]*[pP]assword=)[^&#;]*",
+         "$1<masked>");
+
       try {
          if (driver == null) {
             driver = DriverManager.getDriver(jdbcUrl);
-            LOGGER.debug("Loaded driver with class name {} for jdbcUrl={}", driver.getClass().getName(), sanitizedUrl);
+            LOGGER.debug("Loaded driver with class name {} for jdbcUrl={}",
+               driver.getClass().getName(), sanitizedUrl);
+         } else if (!driver.acceptsURL(jdbcUrl)) {
+            throw new RuntimeException(
+               "Driver " + driverClassName + " claims to not accept jdbcUrl, " + sanitizedUrl);
          }
-         else if (!driver.acceptsURL(jdbcUrl)) {
-            throw new RuntimeException("Driver " + driverClassName + " claims to not accept jdbcUrl, " + sanitizedUrl);
-         }
-      }
-      catch (SQLException e) {
+      } catch (SQLException e) {
          throw new RuntimeException("Failed to get driver instance for jdbcUrl=" + sanitizedUrl, e);
       }
    }
 
    @Override
-   public Connection getConnection() throws SQLException
-   {
+   public Connection getConnection() throws SQLException {
       return driver.connect(jdbcUrl, driverProperties);
    }
 
    @Override
-   public Connection getConnection(final String username, final String password) throws SQLException
-   {
+   public Connection getConnection(final String username, final String password)
+      throws SQLException {
       final var cloned = (Properties) driverProperties.clone();
       if (username != null) {
          cloned.put(USER, username);
@@ -138,44 +144,37 @@ public final class DriverDataSource implements DataSource
    }
 
    @Override
-   public PrintWriter getLogWriter() throws SQLException
-   {
+   public PrintWriter getLogWriter() throws SQLException {
       throw new SQLFeatureNotSupportedException();
    }
 
    @Override
-   public void setLogWriter(PrintWriter logWriter) throws SQLException
-   {
+   public void setLogWriter(PrintWriter logWriter) throws SQLException {
       throw new SQLFeatureNotSupportedException();
    }
 
    @Override
-   public void setLoginTimeout(int seconds) throws SQLException
-   {
+   public void setLoginTimeout(int seconds) throws SQLException {
       DriverManager.setLoginTimeout(seconds);
    }
 
    @Override
-   public int getLoginTimeout() throws SQLException
-   {
+   public int getLoginTimeout() throws SQLException {
       return DriverManager.getLoginTimeout();
    }
 
    @Override
-   public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException
-   {
+   public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
       return driver.getParentLogger();
    }
 
    @Override
-   public <T> T unwrap(Class<T> iface) throws SQLException
-   {
+   public <T> T unwrap(Class<T> iface) throws SQLException {
       throw new SQLFeatureNotSupportedException();
    }
 
    @Override
-   public boolean isWrapperFor(Class<?> iface) throws SQLException
-   {
+   public boolean isWrapperFor(Class<?> iface) throws SQLException {
       return false;
    }
 }

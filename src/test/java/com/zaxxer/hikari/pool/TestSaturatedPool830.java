@@ -25,6 +25,10 @@ import static com.zaxxer.hikari.util.UtilityElf.quietlySleep;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.assertEquals;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.mocks.StubConnection;
+import com.zaxxer.hikari.mocks.StubStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -32,22 +36,16 @@ import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import org.apache.logging.log4j.Level;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-import com.zaxxer.hikari.mocks.StubConnection;
-import com.zaxxer.hikari.mocks.StubStatement;
-
 /**
  * @author Brett Wooldridge
  */
-public class TestSaturatedPool830
-{
+public class TestSaturatedPool830 {
+
    private static final Logger LOGGER = LoggerFactory.getLogger(TestSaturatedPool830.class);
    private static final int MAX_POOL_SIZE = 10;
 
@@ -69,7 +67,8 @@ public class TestSaturatedPool830
 
       try (final HikariDataSource ds = new HikariDataSource(config)) {
          LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
-         ThreadPoolExecutor threadPool = new ThreadPoolExecutor( 50 /*core*/, 50 /*max*/, 2 /*keepalive*/, SECONDS, queue, new ThreadPoolExecutor.CallerRunsPolicy());
+         ThreadPoolExecutor threadPool = new ThreadPoolExecutor(50 /*core*/, 50 /*max*/,
+            2 /*keepalive*/, SECONDS, queue, new ThreadPoolExecutor.CallerRunsPolicy());
          threadPool.allowCoreThreadTimeOut(true);
 
          AtomicInteger windowIndex = new AtomicInteger();
@@ -80,24 +79,23 @@ public class TestSaturatedPool830
          for (int i = 0; i < 50; i++) {
             threadPool.execute(() -> {
                try (Connection conn = ds.getConnection();
-                    Statement stmt = conn.createStatement()) {
+                  Statement stmt = conn.createStatement()) {
                   stmt.execute("SELECT bogus FROM imaginary");
-               }
-               catch (SQLException e) {
+               } catch (SQLException e) {
                   LOGGER.info(e.getMessage());
                }
             });
          }
 
          long sleep = 80;
-outer:   while (true) {
+         outer:
+         while (true) {
             quietlySleep(sleep);
 
             if (elapsedMillis(start) > SECONDS.toMillis(12) && sleep < 100) {
                sleep = 100;
                LOGGER.warn("Switching to 100ms sleep");
-            }
-            else if (elapsedMillis(start) > SECONDS.toMillis(6) && sleep < 90) {
+            } else if (elapsedMillis(start) > SECONDS.toMillis(6) && sleep < 90) {
                sleep = 90;
                LOGGER.warn("Switching to 90ms sleep");
             }
@@ -106,11 +104,10 @@ outer:   while (true) {
                int ndx = windowIndex.incrementAndGet() % failureWindow.length;
 
                try (Connection conn = ds.getConnection();
-                    Statement stmt = conn.createStatement()) {
+                  Statement stmt = conn.createStatement()) {
                   stmt.execute("SELECT bogus FROM imaginary");
                   failureWindow[ndx] = false;
-               }
-               catch (SQLException e) {
+               } catch (SQLException e) {
                   LOGGER.info(e.getMessage());
                   failureWindow[ndx] = true;
                }
@@ -120,9 +117,9 @@ outer:   while (true) {
                if (failureWindow[i]) {
                   if (elapsedMillis(start) % (SECONDS.toMillis(1) - sleep) < sleep) {
                      LOGGER.info("Active threads {}, submissions per second {}, waiting threads {}",
-                                 threadPool.getActiveCount(),
-                                 SECONDS.toMillis(1) / sleep,
-                                 getPool(ds).getThreadsAwaitingConnection());
+                        threadPool.getActiveCount(),
+                        SECONDS.toMillis(1) / sleep,
+                        getPool(ds).getThreadsAwaitingConnection());
                   }
                   continue outer;
                }
@@ -130,9 +127,9 @@ outer:   while (true) {
 
             LOGGER.info("Timeouts have subsided.");
             LOGGER.info("Active threads {}, submissions per second {}, waiting threads {}",
-                        threadPool.getActiveCount(),
-                        SECONDS.toMillis(1) / sleep,
-                        getPool(ds).getThreadsAwaitingConnection());
+               threadPool.getActiveCount(),
+               SECONDS.toMillis(1) / sleep,
+               getPool(ds).getThreadsAwaitingConnection());
             break;
          }
 
@@ -142,8 +139,7 @@ outer:   while (true) {
          }
 
          assertEquals("Rate not in balance at 10req/s", 10L, SECONDS.toMillis(1) / sleep);
-      }
-      finally {
+      } finally {
          StubStatement.setSimulatedQueryTime(0);
          StubConnection.slowCreate = false;
          System.clearProperty("com.zaxxer.hikari.housekeeping.periodMs");

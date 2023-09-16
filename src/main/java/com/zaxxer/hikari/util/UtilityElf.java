@@ -16,29 +16,31 @@
 
 package com.zaxxer.hikari.util;
 
-import java.util.Locale;
-import java.util.concurrent.*;
-
 import static java.lang.Thread.currentThread;
 import static java.util.concurrent.TimeUnit.SECONDS;
+
+import java.util.Locale;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  *
  * @author Brett Wooldridge
  */
-public final class UtilityElf
-{
-   private UtilityElf()
-   {
+public final class UtilityElf {
+
+   private UtilityElf() {
       // non-constructable
    }
 
    /**
     *
     * @return null if string is null or empty
-   */
-   public static String getNullIfEmpty(final String text)
-   {
+    */
+   public static String getNullIfEmpty(final String text) {
       return text == null ? null : text.trim().isEmpty() ? null : text.trim();
    }
 
@@ -47,12 +49,10 @@ public final class UtilityElf
     *
     * @param millis the number of milliseconds to sleep
     */
-   public static void quietlySleep(final long millis)
-   {
+   public static void quietlySleep(final long millis) {
       try {
          Thread.sleep(millis);
-      }
-      catch (InterruptedException e) {
+      } catch (InterruptedException e) {
          // I said be quiet!
          currentThread().interrupt();
       }
@@ -83,8 +83,8 @@ public final class UtilityElf
     * @param args arguments to a constructor
     * @return an instance of the specified class
     */
-   public static <T> T createInstance(final String className, final Class<T> clazz, final Object... args)
-   {
+   public static <T> T createInstance(final String className, final Class<T> clazz,
+      final Object... args) {
       if (className == null) {
          return null;
       }
@@ -101,8 +101,7 @@ public final class UtilityElf
          }
          var constructor = loaded.getConstructor(argClasses);
          return clazz.cast(constructor.newInstance(args));
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
          throw new RuntimeException(e);
       }
    }
@@ -116,9 +115,10 @@ public final class UtilityElf
     * @param policy the RejectedExecutionHandler policy
     * @return a ThreadPoolExecutor
     */
-   public static ThreadPoolExecutor createThreadPoolExecutor(final int queueSize, final String threadName, ThreadFactory threadFactory, final RejectedExecutionHandler policy)
-   {
-      return createThreadPoolExecutor(new LinkedBlockingQueue<>(queueSize), threadName, threadFactory, policy);
+   public static ThreadPoolExecutor createThreadPoolExecutor(final int queueSize,
+      final String threadName, ThreadFactory threadFactory, final RejectedExecutionHandler policy) {
+      return createThreadPoolExecutor(new LinkedBlockingQueue<>(queueSize), threadName,
+         threadFactory, policy);
    }
 
    /**
@@ -130,13 +130,14 @@ public final class UtilityElf
     * @param policy the RejectedExecutionHandler policy
     * @return a ThreadPoolExecutor
     */
-   public static ThreadPoolExecutor createThreadPoolExecutor(final BlockingQueue<Runnable> queue, final String threadName, ThreadFactory threadFactory, final RejectedExecutionHandler policy)
-   {
+   public static ThreadPoolExecutor createThreadPoolExecutor(final BlockingQueue<Runnable> queue,
+      final String threadName, ThreadFactory threadFactory, final RejectedExecutionHandler policy) {
       if (threadFactory == null) {
          threadFactory = new DefaultThreadFactory(threadName);
       }
 
-      var executor = new ThreadPoolExecutor(1 /*core*/, 1 /*max*/, 5 /*keepalive*/, SECONDS, queue, threadFactory, policy);
+      var executor = new ThreadPoolExecutor(1 /*core*/, 1 /*max*/, 5 /*keepalive*/, SECONDS, queue,
+         threadFactory, policy);
       executor.allowCoreThreadTimeOut(true);
       return executor;
    }
@@ -151,12 +152,12 @@ public final class UtilityElf
     * @param transactionIsolationName the name of the transaction isolation level
     * @return the int value of the isolation level or -1
     */
-   public static int getTransactionIsolation(final String transactionIsolationName)
-   {
+   public static int getTransactionIsolation(final String transactionIsolationName) {
       if (transactionIsolationName != null) {
          try {
             // use the english locale to avoid the infamous turkish locale bug
-            final var upperCaseIsolationLevelName = transactionIsolationName.toUpperCase(Locale.ENGLISH);
+            final var upperCaseIsolationLevelName = transactionIsolationName.toUpperCase(
+               Locale.ENGLISH);
             return IsolationLevel.valueOf(upperCaseIsolationLevelName).getLevelId();
          } catch (IllegalArgumentException e) {
             // legacy support for passing an integer version of the isolation level
@@ -168,10 +169,11 @@ public final class UtilityElf
                   }
                }
 
-               throw new IllegalArgumentException("Invalid transaction isolation value: " + transactionIsolationName);
-            }
-            catch (NumberFormatException nfe) {
-               throw new IllegalArgumentException("Invalid transaction isolation value: " + transactionIsolationName, nfe);
+               throw new IllegalArgumentException(
+                  "Invalid transaction isolation value: " + transactionIsolationName);
+            } catch (NumberFormatException nfe) {
+               throw new IllegalArgumentException(
+                  "Invalid transaction isolation value: " + transactionIsolationName, nfe);
             }
          }
       }
@@ -179,15 +181,15 @@ public final class UtilityElf
       return -1;
    }
 
-   public static class CustomDiscardPolicy implements RejectedExecutionHandler
-   {
+   public static class CustomDiscardPolicy implements RejectedExecutionHandler {
+
       @Override
       public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
       }
    }
 
-   public static final class DefaultThreadFactory implements ThreadFactory
-   {
+   public static final class DefaultThreadFactory implements ThreadFactory {
+
       private final String threadName;
       private final boolean daemon;
 

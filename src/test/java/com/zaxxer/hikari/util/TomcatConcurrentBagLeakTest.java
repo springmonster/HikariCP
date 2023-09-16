@@ -16,14 +16,14 @@
 
 package com.zaxxer.hikari.util;
 
+import static com.zaxxer.hikari.pool.TestElf.isJava11;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeTrue;
+
 import com.zaxxer.hikari.pool.TestElf.FauxWebClassLoader;
 import com.zaxxer.hikari.util.ConcurrentBag.IConcurrentBagEntry;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.lang.ref.Reference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -31,22 +31,20 @@ import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.concurrent.CompletableFuture;
-
-import static com.zaxxer.hikari.pool.TestElf.isJava11;
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assume.assumeTrue;
+import org.junit.FixMethodOrder;
+import org.junit.Test;
+import org.junit.runners.MethodSorters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Brett Wooldridge
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class TomcatConcurrentBagLeakTest
-{
+public class TomcatConcurrentBagLeakTest {
+
    @Test
-   public void testConcurrentBagForLeaks() throws Exception
-   {
+   public void testConcurrentBagForLeaks() throws Exception {
       assumeTrue(!isJava11());
 
       ClassLoader cl = new FauxWebClassLoader();
@@ -62,8 +60,7 @@ public class TomcatConcurrentBagLeakTest
    }
 
    @Test
-   public void testConcurrentBagForLeaks2() throws Exception
-   {
+   public void testConcurrentBagForLeaks2() throws Exception {
       assumeTrue(!isJava11());
 
       ClassLoader cl = this.getClass().getClassLoader();
@@ -78,41 +75,38 @@ public class TomcatConcurrentBagLeakTest
       assertNotNull(ex);
    }
 
-   public static class PoolEntry implements IConcurrentBagEntry
-   {
+   public static class PoolEntry implements IConcurrentBagEntry {
+
       private int state;
 
       @Override
-      public boolean compareAndSet(int expectState, int newState)
-      {
+      public boolean compareAndSet(int expectState, int newState) {
          this.state = newState;
          return true;
       }
 
       @Override
-      public void setState(int newState)
-      {
+      public void setState(int newState) {
          this.state = newState;
       }
 
       @Override
-      public int getState()
-      {
+      public int getState() {
          return state;
       }
    }
 
-   public static class FauxWebContext
-   {
+   public static class FauxWebContext {
+
       private static final Logger log = LoggerFactory.getLogger(FauxWebContext.class);
 
       @SuppressWarnings("WeakerAccess")
       public Exception failureException;
 
       @SuppressWarnings({"ResultOfMethodCallIgnored"})
-      public void createConcurrentBag() throws InterruptedException
-      {
-         try (ConcurrentBag<PoolEntry> bag = new ConcurrentBag<>((x) -> CompletableFuture.completedFuture(Boolean.TRUE))) {
+      public void createConcurrentBag() throws InterruptedException {
+         try (ConcurrentBag<PoolEntry> bag = new ConcurrentBag<>(
+            (x) -> CompletableFuture.completedFuture(Boolean.TRUE))) {
 
             PoolEntry entry = new PoolEntry();
             bag.add(entry);
@@ -127,8 +121,7 @@ public class TomcatConcurrentBagLeakTest
          checkThreadLocalsForLeaks();
       }
 
-      private void checkThreadLocalsForLeaks()
-      {
+      private void checkThreadLocalsForLeaks() {
          Thread[] threads = getThreads();
 
          try {
@@ -136,7 +129,8 @@ public class TomcatConcurrentBagLeakTest
             // accessible
             Field threadLocalsField = Thread.class.getDeclaredField("threadLocals");
             threadLocalsField.setAccessible(true);
-            Field inheritableThreadLocalsField = Thread.class.getDeclaredField("inheritableThreadLocals");
+            Field inheritableThreadLocalsField = Thread.class.getDeclaredField(
+               "inheritableThreadLocals");
             inheritableThreadLocalsField.setAccessible(true);
             // Make the underlying array of ThreadLoad.ThreadLocalMap.Entry objects
             // accessible
@@ -165,27 +159,26 @@ public class TomcatConcurrentBagLeakTest
                   }
                }
             }
-         }
-         catch (Throwable t) {
-            log.warn("Failed to check for ThreadLocal references for web application [{}]", getContextName(), t);
+         } catch (Throwable t) {
+            log.warn("Failed to check for ThreadLocal references for web application [{}]",
+               getContextName(), t);
             failureException = new Exception();
          }
       }
 
-      private Object getContextName()
-      {
+      private Object getContextName() {
          return this.getClass().getName();
       }
 
       // THE FOLLOWING CODE COPIED FROM APACHE TOMCAT (2017/01/08)
 
       /**
-      * Analyzes the given thread local map object. Also pass in the field that
-      * points to the internal table to save re-calculating it on every
-      * call to this method.
-      */
-      private void checkThreadLocalMapForLeaks(Object map, Field internalTableField) throws IllegalAccessException, NoSuchFieldException
-      {
+       * Analyzes the given thread local map object. Also pass in the field that
+       * points to the internal table to save re-calculating it on every
+       * call to this method.
+       */
+      private void checkThreadLocalMapForLeaks(Object map, Field internalTableField)
+         throws IllegalAccessException, NoSuchFieldException {
          if (map != null) {
             Object[] table = (Object[]) internalTableField.get(map);
             if (table != null) {
@@ -213,7 +206,9 @@ public class TomcatConcurrentBagLeakTest
                            try {
                               args[2] = key.toString();
                            } catch (Exception e) {
-                              log.warn("Unable to determine string representation of key of type [{}]", args[1], e);
+                              log.warn(
+                                 "Unable to determine string representation of key of type [{}]",
+                                 args[1], e);
                               args[2] = "Unknown";
                            }
                         }
@@ -222,26 +217,38 @@ public class TomcatConcurrentBagLeakTest
                            try {
                               args[4] = value.toString();
                            } catch (Exception e) {
-                              log.warn("webappClassLoader.checkThreadLocalsForLeaks.badValue {}", args[3], e);
+                              log.warn("webappClassLoader.checkThreadLocalsForLeaks.badValue {}",
+                                 args[3], e);
                               args[4] = "Unknown";
                            }
                         }
 
                         if (valueLoadedByWebapp) {
-                           log.error("The web application [{}] created a ThreadLocal with key of type [{}] " +
-                              "(value [{}]) and a value of type [{}] (value [{}]) but failed to remove " +
-                              "it when the web application was stopped. Threads are going to be renewed " +
-                              "over time to try and avoid a probable memory leak.", args);
+                           log.error(
+                              "The web application [{}] created a ThreadLocal with key of type [{}] "
+                                 +
+                                 "(value [{}]) and a value of type [{}] (value [{}]) but failed to remove "
+                                 +
+                                 "it when the web application was stopped. Threads are going to be renewed "
+                                 +
+                                 "over time to try and avoid a probable memory leak.", args);
                            failureException = new Exception();
                         } else if (value == null) {
-                           log.debug("The web application [{}] created a ThreadLocal with key of type [{}] " +
-                              "(value [{}]). The ThreadLocal has been correctly set to null and the " +
-                              "key will be removed by GC.", args);
+                           log.debug(
+                              "The web application [{}] created a ThreadLocal with key of type [{}] "
+                                 +
+                                 "(value [{}]). The ThreadLocal has been correctly set to null and the "
+                                 +
+                                 "key will be removed by GC.", args);
                            failureException = new Exception();
                         } else {
-                           log.debug("The web application [{}] created a ThreadLocal with key of type [{}] " +
-                              "(value [{}]) and a value of type [{}] (value [{}]). Since keys are only " +
-                              "weakly held by the ThreadLocal Map this is not a memory leak.", args);
+                           log.debug(
+                              "The web application [{}] created a ThreadLocal with key of type [{}] "
+                                 +
+                                 "(value [{}]) and a value of type [{}] (value [{}]). Since keys are only "
+                                 +
+                                 "weakly held by the ThreadLocal Map this is not a memory leak.",
+                              args);
                            failureException = new Exception();
                         }
                      }
@@ -286,17 +293,17 @@ public class TomcatConcurrentBagLeakTest
                   }
                }
             } catch (ConcurrentModificationException e) {
-               log.warn("Failed to check for ThreadLocal references for web application [{}]", getContextName(), e);
+               log.warn("Failed to check for ThreadLocal references for web application [{}]",
+                  getContextName(), e);
             }
          }
          return false;
       }
 
       /*
-      * Get the set of current threads as an array.
-      */
-      private Thread[] getThreads()
-      {
+       * Get the set of current threads as an array.
+       */
+      private Thread[] getThreads() {
          // Get the current thread group
          ThreadGroup tg = Thread.currentThread().getThreadGroup();
          // Find the root thread group
@@ -304,9 +311,10 @@ public class TomcatConcurrentBagLeakTest
             while (tg.getParent() != null) {
                tg = tg.getParent();
             }
-         }
-         catch (SecurityException se) {
-            log.warn("Unable to obtain the parent for ThreadGroup [{}]. It will not be possible to check all threads for potential memory leaks", tg.getName(), se);
+         } catch (SecurityException se) {
+            log.warn(
+               "Unable to obtain the parent for ThreadGroup [{}]. It will not be possible to check all threads for potential memory leaks",
+               tg.getName(), se);
          }
 
          int threadCountGuess = tg.activeCount() + 50;
@@ -324,8 +332,7 @@ public class TomcatConcurrentBagLeakTest
          return threads;
       }
 
-      private String getPrettyClassName(Class<?> clazz)
-      {
+      private String getPrettyClassName(Class<?> clazz) {
          String name = clazz.getCanonicalName();
          if (name == null) {
             name = clazz.getName();

@@ -14,7 +14,10 @@
 <img height="60" src="https://github.com/brettwooldridge/HikariCP/wiki/space60x1.gif"/>
 
 -------------------------------------------------------------------------------------
- * Images on this page are Trademarked and Copyrighted by their respective rights holders.
- * Images on this page are used without express permission, and do not constitute an endorsement of HikariCP. If you are a trademark or copyright holder and wish an image to be removed from this page, please open a request in the issue tracker.
+
+* Images on this page are Trademarked and Copyrighted by their respective rights holders.
+* Images on this page are used without express permission, and do not constitute an endorsement of
+  HikariCP. If you are a trademark or copyright holder and wish an image to be removed from this
+  page, please open a request in the issue tracker.
 
 [spacer]: https://github.com/brettwooldridge/HikariCP/wiki/space60x1.gif

@@ -25,10 +25,9 @@ import java.sql.SQLException;
  *
  * @author Brett Wooldridge
  */
-public abstract class ProxyPreparedStatement extends ProxyStatement implements PreparedStatement
-{
-   ProxyPreparedStatement(ProxyConnection connection, PreparedStatement statement)
-   {
+public abstract class ProxyPreparedStatement extends ProxyStatement implements PreparedStatement {
+
+   ProxyPreparedStatement(ProxyConnection connection, PreparedStatement statement) {
       super(connection, statement);
    }
 
@@ -38,16 +37,14 @@ public abstract class ProxyPreparedStatement extends ProxyStatement implements P
 
    /** {@inheritDoc} */
    @Override
-   public boolean execute() throws SQLException
-   {
+   public boolean execute() throws SQLException {
       connection.markCommitStateDirty();
       return ((PreparedStatement) delegate).execute();
    }
 
    /** {@inheritDoc} */
    @Override
-   public ResultSet executeQuery() throws SQLException
-   {
+   public ResultSet executeQuery() throws SQLException {
       connection.markCommitStateDirty();
       var resultSet = ((PreparedStatement) delegate).executeQuery();
       return ProxyFactory.getProxyResultSet(connection, this, resultSet);
@@ -55,16 +52,14 @@ public abstract class ProxyPreparedStatement extends ProxyStatement implements P
 
    /** {@inheritDoc} */
    @Override
-   public int executeUpdate() throws SQLException
-   {
+   public int executeUpdate() throws SQLException {
       connection.markCommitStateDirty();
       return ((PreparedStatement) delegate).executeUpdate();
    }
 
    /** {@inheritDoc} */
    @Override
-   public long executeLargeUpdate() throws SQLException
-   {
+   public long executeLargeUpdate() throws SQLException {
       connection.markCommitStateDirty();
       return ((PreparedStatement) delegate).executeLargeUpdate();
    }

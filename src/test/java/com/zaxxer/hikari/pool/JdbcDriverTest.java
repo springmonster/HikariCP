@@ -19,31 +19,27 @@ import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import org.junit.After;
-import org.junit.Test;
-
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.util.DriverDataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import org.junit.After;
+import org.junit.Test;
 
-public class JdbcDriverTest
-{
+public class JdbcDriverTest {
+
    private HikariDataSource ds;
 
    @After
-   public void teardown()
-   {
+   public void teardown() {
       if (ds != null) {
          ds.close();
       }
    }
 
    @Test
-   public void driverTest1() throws SQLException
-   {
+   public void driverTest1() throws SQLException {
       HikariConfig config = newHikariConfig();
       config.setMinimumIdle(1);
       config.setMaximumPoolSize(1);
@@ -66,8 +62,7 @@ public class JdbcDriverTest
    }
 
    @Test
-   public void driverTest2() throws SQLException
-   {
+   public void driverTest2() throws SQLException {
       HikariConfig config = newHikariConfig();
 
       config.setMinimumIdle(1);
@@ -78,8 +73,7 @@ public class JdbcDriverTest
 
       try {
          ds = new HikariDataSource(config);
-      }
-      catch (RuntimeException e) {
+      } catch (RuntimeException e) {
          assertTrue(e.getMessage().contains("claims to not accept"));
       }
    }

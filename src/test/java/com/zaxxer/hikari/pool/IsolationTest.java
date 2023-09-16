@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package com.zaxxer.hikari.pool;
 
@@ -20,18 +20,15 @@ import static com.zaxxer.hikari.pool.TestElf.newHikariDataSource;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-
 import org.junit.Test;
 
-import com.zaxxer.hikari.HikariDataSource;
+public class IsolationTest {
 
-public class IsolationTest
-{
    @Test
-   public void testIsolation() throws SQLException
-   {
+   public void testIsolation() throws SQLException {
       try (HikariDataSource ds = newHikariDataSource()) {
          ds.setMinimumIdle(1);
          ds.setMaximumPoolSize(1);
@@ -45,15 +42,15 @@ public class IsolationTest
                connection2.close();
 
                assertNotSame(connection, connection2);
-               assertSame(connection.unwrap(Connection.class), connection2.unwrap(Connection.class));
+               assertSame(connection.unwrap(Connection.class),
+                  connection2.unwrap(Connection.class));
             }
          }
       }
    }
 
    @Test
-   public void testNonIsolation() throws SQLException
-   {
+   public void testNonIsolation() throws SQLException {
       try (HikariDataSource ds = newHikariDataSource()) {
          ds.setMinimumIdle(1);
          ds.setMaximumPoolSize(1);
@@ -66,7 +63,8 @@ public class IsolationTest
             try (Connection connection2 = ds.getConnection()) {
                connection2.close();
 
-               assertSame(connection.unwrap(Connection.class), connection2.unwrap(Connection.class));
+               assertSame(connection.unwrap(Connection.class),
+                  connection2.unwrap(Connection.class));
             }
          }
       }

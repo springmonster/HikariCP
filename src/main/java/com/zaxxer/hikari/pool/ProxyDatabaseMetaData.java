@@ -5,30 +5,28 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
-{
+public abstract class ProxyDatabaseMetaData implements DatabaseMetaData {
+
    protected final ProxyConnection connection;
 
    @SuppressWarnings("WeakerAccess")
    protected final DatabaseMetaData delegate;
 
-   ProxyDatabaseMetaData(ProxyConnection connection, DatabaseMetaData metaData)
-   {
+   ProxyDatabaseMetaData(ProxyConnection connection, DatabaseMetaData metaData) {
       this.connection = connection;
       this.delegate = metaData;
    }
 
-   final SQLException checkException(SQLException e)
-   {
+   final SQLException checkException(SQLException e) {
       return connection.checkException(e);
    }
 
    /** {@inheritDoc} */
    @Override
-   public final String toString()
-   {
+   public final String toString() {
       final var delegateToString = delegate.toString();
-      return this.getClass().getSimpleName() + '@' + System.identityHashCode(this) + " wrapping " + delegateToString;
+      return this.getClass().getSimpleName() + '@' + System.identityHashCode(this) + " wrapping "
+         + delegateToString;
    }
 
    // **********************************************************************
@@ -37,13 +35,13 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
 
    /** {@inheritDoc} */
    @Override
-   public final Connection getConnection()
-   {
+   public final Connection getConnection() {
       return connection;
    }
 
    @Override
-   public ResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern) throws SQLException {
+   public ResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern)
+      throws SQLException {
       var resultSet = delegate.getProcedures(catalog, schemaPattern, procedureNamePattern);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -53,8 +51,10 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getProcedureColumns(String catalog, String schemaPattern, String procedureNamePattern, String columnNamePattern) throws SQLException {
-      var resultSet = delegate.getProcedureColumns(catalog, schemaPattern, procedureNamePattern, columnNamePattern);
+   public ResultSet getProcedureColumns(String catalog, String schemaPattern,
+      String procedureNamePattern, String columnNamePattern) throws SQLException {
+      var resultSet = delegate.getProcedureColumns(catalog, schemaPattern, procedureNamePattern,
+         columnNamePattern);
       var statement = resultSet.getStatement();
       if (statement != null) {
          statement = ProxyFactory.getProxyStatement(connection, statement);
@@ -63,7 +63,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
+   public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern,
+      String[] types) throws SQLException {
       var resultSet = delegate.getTables(catalog, schemaPattern, tableNamePattern, types);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -103,8 +104,10 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
-      var resultSet = delegate.getColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
+   public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern,
+      String columnNamePattern) throws SQLException {
+      var resultSet = delegate.getColumns(catalog, schemaPattern, tableNamePattern,
+         columnNamePattern);
       var statement = resultSet.getStatement();
       if (statement != null) {
          statement = ProxyFactory.getProxyStatement(connection, statement);
@@ -113,7 +116,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern) throws SQLException {
+   public ResultSet getColumnPrivileges(String catalog, String schema, String table,
+      String columnNamePattern) throws SQLException {
       var resultSet = delegate.getColumnPrivileges(catalog, schema, table, columnNamePattern);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -123,7 +127,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getTablePrivileges(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
+   public ResultSet getTablePrivileges(String catalog, String schemaPattern,
+      String tableNamePattern) throws SQLException {
       var resultSet = delegate.getTablePrivileges(catalog, schemaPattern, tableNamePattern);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -133,7 +138,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getBestRowIdentifier(String catalog, String schema, String table, int scope, boolean nullable) throws SQLException {
+   public ResultSet getBestRowIdentifier(String catalog, String schema, String table, int scope,
+      boolean nullable) throws SQLException {
       var resultSet = delegate.getBestRowIdentifier(catalog, schema, table, scope, nullable);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -143,7 +149,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getVersionColumns(String catalog, String schema, String table) throws SQLException {
+   public ResultSet getVersionColumns(String catalog, String schema, String table)
+      throws SQLException {
       var resultSet = delegate.getVersionColumns(catalog, schema, table);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -153,7 +160,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getPrimaryKeys(String catalog, String schema, String table) throws SQLException {
+   public ResultSet getPrimaryKeys(String catalog, String schema, String table)
+      throws SQLException {
       var resultSet = delegate.getPrimaryKeys(catalog, schema, table);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -163,7 +171,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getImportedKeys(String catalog, String schema, String table) throws SQLException {
+   public ResultSet getImportedKeys(String catalog, String schema, String table)
+      throws SQLException {
       var resultSet = delegate.getImportedKeys(catalog, schema, table);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -173,7 +182,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getExportedKeys(String catalog, String schema, String table) throws SQLException {
+   public ResultSet getExportedKeys(String catalog, String schema, String table)
+      throws SQLException {
       var resultSet = delegate.getExportedKeys(catalog, schema, table);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -183,8 +193,10 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getCrossReference(String parentCatalog, String parentSchema, String parentTable, String foreignCatalog, String foreignSchema, String foreignTable) throws SQLException {
-      var resultSet = delegate.getCrossReference(parentCatalog, parentSchema, parentTable, foreignCatalog, foreignSchema, foreignTable);
+   public ResultSet getCrossReference(String parentCatalog, String parentSchema, String parentTable,
+      String foreignCatalog, String foreignSchema, String foreignTable) throws SQLException {
+      var resultSet = delegate.getCrossReference(parentCatalog, parentSchema, parentTable,
+         foreignCatalog, foreignSchema, foreignTable);
       var statement = resultSet.getStatement();
       if (statement != null) {
          statement = ProxyFactory.getProxyStatement(connection, statement);
@@ -203,7 +215,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getIndexInfo(String catalog, String schema, String table, boolean unique, boolean approximate) throws SQLException {
+   public ResultSet getIndexInfo(String catalog, String schema, String table, boolean unique,
+      boolean approximate) throws SQLException {
       var resultSet = delegate.getIndexInfo(catalog, schema, table, unique, approximate);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -213,7 +226,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getUDTs(String catalog, String schemaPattern, String typeNamePattern, int[] types) throws SQLException {
+   public ResultSet getUDTs(String catalog, String schemaPattern, String typeNamePattern,
+      int[] types) throws SQLException {
       var resultSet = delegate.getUDTs(catalog, schemaPattern, typeNamePattern, types);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -223,7 +237,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getSuperTypes(String catalog, String schemaPattern, String typeNamePattern) throws SQLException {
+   public ResultSet getSuperTypes(String catalog, String schemaPattern, String typeNamePattern)
+      throws SQLException {
       var resultSet = delegate.getSuperTypes(catalog, schemaPattern, typeNamePattern);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -233,7 +248,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
+   public ResultSet getSuperTables(String catalog, String schemaPattern, String tableNamePattern)
+      throws SQLException {
       var resultSet = delegate.getSuperTables(catalog, schemaPattern, tableNamePattern);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -243,8 +259,10 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getAttributes(String catalog, String schemaPattern, String typeNamePattern, String attributeNamePattern) throws SQLException {
-      var resultSet = delegate.getAttributes(catalog, schemaPattern, typeNamePattern, attributeNamePattern);
+   public ResultSet getAttributes(String catalog, String schemaPattern, String typeNamePattern,
+      String attributeNamePattern) throws SQLException {
+      var resultSet = delegate.getAttributes(catalog, schemaPattern, typeNamePattern,
+         attributeNamePattern);
       var statement = resultSet.getStatement();
       if (statement != null) {
          statement = ProxyFactory.getProxyStatement(connection, statement);
@@ -273,7 +291,8 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getFunctions(String catalog, String schemaPattern, String functionNamePattern) throws SQLException {
+   public ResultSet getFunctions(String catalog, String schemaPattern, String functionNamePattern)
+      throws SQLException {
       var resultSet = delegate.getFunctions(catalog, schemaPattern, functionNamePattern);
       var statement = resultSet.getStatement();
       if (statement != null) {
@@ -283,8 +302,10 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getFunctionColumns(String catalog, String schemaPattern, String functionNamePattern, String columnNamePattern) throws SQLException {
-      var resultSet = delegate.getFunctionColumns(catalog, schemaPattern, functionNamePattern, columnNamePattern);
+   public ResultSet getFunctionColumns(String catalog, String schemaPattern,
+      String functionNamePattern, String columnNamePattern) throws SQLException {
+      var resultSet = delegate.getFunctionColumns(catalog, schemaPattern, functionNamePattern,
+         columnNamePattern);
       var statement = resultSet.getStatement();
       if (statement != null) {
          statement = ProxyFactory.getProxyStatement(connection, statement);
@@ -293,8 +314,10 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    }
 
    @Override
-   public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
-      var resultSet = delegate.getPseudoColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern);
+   public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern,
+      String columnNamePattern) throws SQLException {
+      var resultSet = delegate.getPseudoColumns(catalog, schemaPattern, tableNamePattern,
+         columnNamePattern);
       var statement = resultSet.getStatement();
       if (statement != null) {
          statement = ProxyFactory.getProxyStatement(connection, statement);
@@ -305,12 +328,10 @@ public abstract class ProxyDatabaseMetaData implements DatabaseMetaData
    /** {@inheritDoc} */
    @Override
    @SuppressWarnings("unchecked")
-   public final <T> T unwrap(Class<T> iface) throws SQLException
-   {
+   public final <T> T unwrap(Class<T> iface) throws SQLException {
       if (iface.isInstance(delegate)) {
          return (T) delegate;
-      }
-      else if (delegate != null) {
+      } else if (delegate != null) {
          return delegate.unwrap(iface);
       }
 

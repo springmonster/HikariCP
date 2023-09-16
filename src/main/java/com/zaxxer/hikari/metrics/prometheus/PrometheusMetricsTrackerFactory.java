@@ -16,16 +16,15 @@
 
 package com.zaxxer.hikari.metrics.prometheus;
 
+import static com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory.RegistrationStatus.REGISTERED;
+
 import com.zaxxer.hikari.metrics.IMetricsTracker;
 import com.zaxxer.hikari.metrics.MetricsTrackerFactory;
 import com.zaxxer.hikari.metrics.PoolStats;
 import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory.RegistrationStatus.REGISTERED;
 
 /**
  * <pre>{@code
@@ -40,8 +39,7 @@ import static com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFacto
  * Note: the internal {@see io.prometheus.client.Summary} requires heavy locks. Consider using
  * {@see PrometheusHistogramMetricsTrackerFactory} if performance plays a role and you don't need the summary per se.
  */
-public class PrometheusMetricsTrackerFactory implements MetricsTrackerFactory
-{
+public class PrometheusMetricsTrackerFactory implements MetricsTrackerFactory {
 
    private final static Map<CollectorRegistry, RegistrationStatus> registrationStatuses = new ConcurrentHashMap<>();
 
@@ -49,8 +47,7 @@ public class PrometheusMetricsTrackerFactory implements MetricsTrackerFactory
 
    private final CollectorRegistry collectorRegistry;
 
-   enum RegistrationStatus
-   {
+   enum RegistrationStatus {
       REGISTERED
    }
 
@@ -58,8 +55,7 @@ public class PrometheusMetricsTrackerFactory implements MetricsTrackerFactory
     * Default Constructor. The Hikari metrics are registered to the default
     * collector registry ({@code CollectorRegistry.defaultRegistry}).
     */
-   public PrometheusMetricsTrackerFactory()
-   {
+   public PrometheusMetricsTrackerFactory() {
       this(CollectorRegistry.defaultRegistry);
    }
 
@@ -67,21 +63,18 @@ public class PrometheusMetricsTrackerFactory implements MetricsTrackerFactory
     * Constructor that allows to pass in a {@link CollectorRegistry} to which the
     * Hikari metrics are registered.
     */
-   public PrometheusMetricsTrackerFactory(CollectorRegistry collectorRegistry)
-   {
+   public PrometheusMetricsTrackerFactory(CollectorRegistry collectorRegistry) {
       this.collectorRegistry = collectorRegistry;
    }
 
    @Override
-   public IMetricsTracker create(String poolName, PoolStats poolStats)
-   {
+   public IMetricsTracker create(String poolName, PoolStats poolStats) {
       registerCollector(this.collector, this.collectorRegistry);
       this.collector.add(poolName, poolStats);
       return new PrometheusMetricsTracker(poolName, this.collectorRegistry, this.collector);
    }
 
-   private void registerCollector(Collector collector, CollectorRegistry collectorRegistry)
-   {
+   private void registerCollector(Collector collector, CollectorRegistry collectorRegistry) {
       if (registrationStatuses.putIfAbsent(collectorRegistry, REGISTERED) == null) {
          collector.register(collectorRegistry);
       }

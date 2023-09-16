@@ -12,10 +12,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package com.zaxxer.hikari;
 
+import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.List;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Filter;
@@ -30,13 +36,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
-
-import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
-import static org.junit.Assert.*;
-
 public class HikariConfigTest {
+
    private TestAppender testAppender = new TestAppender();
 
    @Before
@@ -89,7 +90,7 @@ public class HikariConfigTest {
       private String log;
 
       TestAppender() {
-         super("TestAppender", (Filter)null, (Layout)null, true, Property.EMPTY_ARRAY);
+         super("TestAppender", (Filter) null, (Layout) null, true, Property.EMPTY_ARRAY);
       }
 
       @Override

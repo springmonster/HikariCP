@@ -12,44 +12,38 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
-*/
+ */
 
 package com.zaxxer.hikari.metrics.prometheus;
 
 import static com.zaxxer.hikari.pool.TestElf.newHikariConfig;
 import static com.zaxxer.hikari.util.UtilityElf.quietlySleep;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
-
-import java.sql.Connection;
-import java.util.List;
-
-import com.zaxxer.hikari.metrics.PoolStats;
-import io.prometheus.client.Collector;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertNull;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.metrics.PoolStats;
 import com.zaxxer.hikari.mocks.StubConnection;
-
+import io.prometheus.client.Collector;
 import io.prometheus.client.CollectorRegistry;
+import java.sql.Connection;
+import java.util.List;
+import org.junit.Before;
+import org.junit.Test;
 
-public class HikariCPCollectorTest
-{
+public class HikariCPCollectorTest {
 
    private CollectorRegistry collectorRegistry;
 
    @Before
-   public void setupCollectorRegistry()
-   {
+   public void setupCollectorRegistry() {
       this.collectorRegistry = new CollectorRegistry();
    }
 
    @Test
-   public void noConnection()
-   {
+   public void noConnection() {
       HikariConfig config = newHikariConfig();
       config.setMinimumIdle(0);
       config.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory(this.collectorRegistry));
@@ -63,15 +57,13 @@ public class HikariCPCollectorTest
          assertThat(getValue("hikaricp_connections", "noConnection"), is(0.0));
          assertThat(getValue("hikaricp_max_connections", "noConnection"), is(10.0));
          assertThat(getValue("hikaricp_min_connections", "noConnection"), is(0.0));
-      }
-      finally {
+      } finally {
          StubConnection.slowCreate = false;
       }
    }
 
    @Test
-   public void noConnectionWithoutPoolName()
-   {
+   public void noConnectionWithoutPoolName() {
       HikariConfig config = new HikariConfig();
       config.setMinimumIdle(0);
       config.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory(this.collectorRegistry));
@@ -86,15 +78,13 @@ public class HikariCPCollectorTest
          assertThat(getValue("hikaricp_connections", poolName), is(0.0));
          assertThat(getValue("hikaricp_max_connections", poolName), is(10.0));
          assertThat(getValue("hikaricp_min_connections", poolName), is(0.0));
-      }
-      finally {
+      } finally {
          StubConnection.slowCreate = false;
       }
    }
 
    @Test
-   public void connection1() throws Exception
-   {
+   public void connection1() throws Exception {
       HikariConfig config = newHikariConfig();
       config.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory(this.collectorRegistry));
       config.setDataSourceClassName("com.zaxxer.hikari.mocks.StubDataSource");
@@ -112,15 +102,13 @@ public class HikariCPCollectorTest
          assertThat(getValue("hikaricp_connections", "connection1"), is(1.0));
          assertThat(getValue("hikaricp_max_connections", "connection1"), is(1.0));
          assertThat(getValue("hikaricp_min_connections", "connection1"), is(1.0));
-      }
-      finally {
+      } finally {
          StubConnection.slowCreate = false;
       }
    }
 
    @Test
-   public void connectionClosed() throws Exception
-   {
+   public void connectionClosed() throws Exception {
       HikariConfig config = newHikariConfig();
       config.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory(this.collectorRegistry));
       config.setDataSourceClassName("com.zaxxer.hikari.mocks.StubDataSource");
@@ -138,15 +126,13 @@ public class HikariCPCollectorTest
          assertThat(getValue("hikaricp_connections", "connectionClosed"), is(1.0));
          assertThat(getValue("hikaricp_max_connections", "connectionClosed"), is(1.0));
          assertThat(getValue("hikaricp_min_connections", "connectionClosed"), is(1.0));
-      }
-      finally {
+      } finally {
          StubConnection.slowCreate = false;
       }
    }
 
    @Test
-   public void poolStatsRemovedAfterShutDown() throws Exception
-   {
+   public void poolStatsRemovedAfterShutDown() throws Exception {
       HikariConfig config = new HikariConfig();
       config.setPoolName("shutDownPool");
       config.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory(this.collectorRegistry));
@@ -165,8 +151,7 @@ public class HikariCPCollectorTest
          assertThat(getValue("hikaricp_connections", "shutDownPool"), is(1.0));
          assertThat(getValue("hikaricp_max_connections", "shutDownPool"), is(1.0));
          assertThat(getValue("hikaricp_min_connections", "shutDownPool"), is(1.0));
-      }
-      finally {
+      } finally {
          StubConnection.slowCreate = false;
       }
 
@@ -179,15 +164,16 @@ public class HikariCPCollectorTest
    }
 
    @Test
-   public void testHikariCPCollectorGaugesMetricsInitialization()
-   {
+   public void testHikariCPCollectorGaugesMetricsInitialization() {
       HikariCPCollector hikariCPCollector = new HikariCPCollector();
       hikariCPCollector.add("collectorTestPool", poolStatsWithPredefinedValues());
       List<Collector.MetricFamilySamples> metrics = hikariCPCollector.collect();
       hikariCPCollector.register(collectorRegistry);
 
       assertThat(metrics.size(), is(6));
-      assertThat(metrics.stream().filter(metricFamilySamples -> metricFamilySamples.type == Collector.Type.GAUGE).count(), is(6L));
+      assertThat(metrics.stream()
+            .filter(metricFamilySamples -> metricFamilySamples.type == Collector.Type.GAUGE).count(),
+         is(6L));
       assertThat(getValue("hikaricp_active_connections", "collectorTestPool"), is(58.0));
       assertThat(getValue("hikaricp_idle_connections", "collectorTestPool"), is(42.0));
       assertThat(getValue("hikaricp_pending_threads", "collectorTestPool"), is(1.0));
@@ -196,15 +182,13 @@ public class HikariCPCollectorTest
       assertThat(getValue("hikaricp_min_connections", "collectorTestPool"), is(3.0));
    }
 
-   private Double getValue(String name, String poolName)
-   {
+   private Double getValue(String name, String poolName) {
       String[] labelNames = {"pool"};
       String[] labelValues = {poolName};
       return this.collectorRegistry.getSampleValue(name, labelNames, labelValues);
    }
 
-   private PoolStats poolStatsWithPredefinedValues()
-   {
+   private PoolStats poolStatsWithPredefinedValues() {
       return new PoolStats(0) {
          @Override
          protected void update() {
